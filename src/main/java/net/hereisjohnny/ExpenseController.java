@@ -10,10 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Collection;
@@ -22,7 +19,7 @@ import java.util.Optional;
 /**
  * Created by gomez on 5/17/16.
  */
-@Controller
+@RestController
 @RequestMapping("{categoryName}/expenses")
 public class ExpenseController {
     private final ExpenseRepository expenseRepository;
@@ -44,13 +41,16 @@ public class ExpenseController {
 
     @RequestMapping(value = "/{expenseId}", method = RequestMethod.GET)
     Expense readExpense(@PathVariable String categoryName, @PathVariable Long expenseId) {
-        return this.expenseRepository.findOne(expenseId);
+        Expense expense = expenseRepository.findOne(expenseId);
+
+        return expense;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     Collection<Expense> readExpenseByCategory(@PathVariable String categoryName) {
         Category category = readCategory(categoryName);
-        return this.expenseRepository.findByCategory(category);
+        Collection<Expense> expenses = expenseRepository.findByCategory(category);
+        return expenses;
     }
 
     @Autowired

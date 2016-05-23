@@ -1,5 +1,7 @@
 package net.hereisjohnny.webservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -14,6 +16,7 @@ import java.time.LocalDate;
 @Entity
 public class Expense implements Serializable{
 
+    @JsonIgnore
     @ManyToOne
     private Category category;
 
