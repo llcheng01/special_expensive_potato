@@ -15,7 +15,6 @@ public class Expense implements Serializable{
     private Category category;
 
     @Id
-    @GeneratedValue
     private long id;
     private String name;
     @Column(length = 100000)
@@ -25,6 +24,13 @@ public class Expense implements Serializable{
         this.category = category;
         this.name = name;
         this.current_price = amount;
+    }
+
+    public Expense(Category category, long id, String name, Money current_price) {
+        this.category = category;
+        this.id = id;
+        this.name = name;
+        this.current_price = current_price;
     }
 
     public Category getCategory() {

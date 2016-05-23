@@ -5,20 +5,28 @@ import net.hereisjohnny.dao.ExpenseRepository;
 import net.hereisjohnny.exceptions.CategoryNotFoundException;
 import net.hereisjohnny.webservice.model.Category;
 import net.hereisjohnny.webservice.model.Expense;
+import net.hereisjohnny.webservice.rest.ProductResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created by gomez on 5/22/16.
  */
 @Service
 public class ExpenseServiceImpl implements ExpenseService {
+    private static final Logger log = LoggerFactory.getLogger(ExpenseServiceImpl.class);
+
     private final ExpenseRepository expenseRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductService productService;
 
     @Override
     public Collection<Category> findAllCatorgies() {
@@ -41,8 +49,37 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public Expense findExpenseById(Long id) {
+        // Start the clock
+        long start = System.currentTimeMillis();
         Expense expense = expenseRepository.findOne(id);
-        return expense;
+
+        Future<ProductResponse> responseFuture = null;
+        ProductResponse response = null;
+        try {
+            responseFuture = productService.findProduct(String.valueOf(expense.getId()));
+        } catch (InterruptedException ie) {
+
+        }
+
+        // Wait until all done
+//        while (!responseFuture.isDone()) {
+//            Thread.sleep(10);
+//        }
+        log.info("Elapsed time: " + (System.currentTimeMillis() - start));
+        // Quote quote = restTemplate.getForObject("http://gturnquist-quoters.cfapps.io/api/random", Quote.class);
+        try {
+            response = responseFuture.get();
+        } catch (ExecutionException ee) {
+
+        } catch (InterruptedException ie) {
+
+        }
+
+        // Aggregate Product
+        String description = response.getProductCompositeResponse().getItems().get(0).getOnlineDescription().getValue();
+        Expense new_expense = new Expense(expense.getCategory(), description, expense.getCurrent_price());
+
+        return new_expense;
     }
 
     @Override
@@ -64,9 +101,10 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Autowired
-    public ExpenseServiceImpl(ExpenseRepository expenseRepository, CategoryRepository categoryRepository) {
+    public ExpenseServiceImpl(ExpenseRepository expenseRepository, CategoryRepository categoryRepository, ProductService productService) {
         this.expenseRepository = expenseRepository;
         this.categoryRepository = categoryRepository;
+        this.productService = productService;
     }
 
 }
