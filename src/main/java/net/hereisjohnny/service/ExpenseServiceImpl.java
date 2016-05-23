@@ -2,15 +2,18 @@ package net.hereisjohnny.service;
 
 import net.hereisjohnny.dao.CategoryRepository;
 import net.hereisjohnny.dao.ExpenseRepository;
+import net.hereisjohnny.dao.ProductRepository;
 import net.hereisjohnny.exceptions.CategoryNotFoundException;
 import net.hereisjohnny.webservice.model.Category;
 import net.hereisjohnny.webservice.model.Expense;
+import net.hereisjohnny.webservice.model.Money;
 import net.hereisjohnny.webservice.rest.ProductResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
@@ -27,6 +30,8 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final CategoryRepository categoryRepository;
     private final ProductService productService;
+    private final ProductRepository productRepository;
+
 
     @Override
     public Collection<Category> findAllCatorgies() {
@@ -53,6 +58,9 @@ public class ExpenseServiceImpl implements ExpenseService {
         long start = System.currentTimeMillis();
         Expense expense = expenseRepository.findOne(id);
 
+        // From Redis
+        String price = productRepository.findById(String.valueOf(id));
+
         Future<ProductResponse> responseFuture = null;
         ProductResponse response = null;
         try {
@@ -77,7 +85,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         // Aggregate Product
         String description = response.getProductCompositeResponse().getItems().get(0).getOnlineDescription().getValue();
-        Expense new_expense = new Expense(expense.getCategory(), description, expense.getCurrent_price());
+        Expense new_expense = new Expense(expense.getCategory(), description, new Money(new BigDecimal(price), "USD"));
 
         return new_expense;
     }
@@ -101,10 +109,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Autowired
-    public ExpenseServiceImpl(ExpenseRepository expenseRepository, CategoryRepository categoryRepository, ProductService productService) {
+    public ExpenseServiceImpl(ExpenseRepository expenseRepository, CategoryRepository categoryRepository, ProductService productService, ProductRepository productRepository) {
         this.expenseRepository = expenseRepository;
         this.categoryRepository = categoryRepository;
         this.productService = productService;
+        this.productRepository = productRepository;
     }
 
 }

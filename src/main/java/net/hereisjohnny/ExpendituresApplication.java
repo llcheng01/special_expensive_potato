@@ -2,10 +2,12 @@ package net.hereisjohnny;
 
 import net.hereisjohnny.dao.CategoryRepository;
 import net.hereisjohnny.dao.ExpenseRepository;
+import net.hereisjohnny.dao.ProductRepository;
 import net.hereisjohnny.service.ProductService;
 import net.hereisjohnny.webservice.model.Category;
 import net.hereisjohnny.webservice.model.Expense;
 import net.hereisjohnny.webservice.model.Money;
+import net.hereisjohnny.webservice.model.Product;
 import net.hereisjohnny.webservice.rest.ProductCompositeResponse;
 import net.hereisjohnny.webservice.rest.ProductResponse;
 import net.hereisjohnny.webservice.rest.Quote;
@@ -30,7 +32,7 @@ public class ExpendituresApplication {
 	private static final Logger log = LoggerFactory.getLogger(ExpendituresApplication.class);
 
 	@Bean
-	CommandLineRunner init(CategoryRepository categoryRepository, ExpenseRepository expenseRepository, ProductService productService) {
+	CommandLineRunner init(CategoryRepository categoryRepository, ExpenseRepository expenseRepository, ProductService productService, ProductRepository productRepository) {
 		return (evt) -> {
 
 			Category category1 = categoryRepository.save(new Category("breakfast"));
@@ -47,6 +49,10 @@ public class ExpendituresApplication {
 			expenseRepository.save(new Expense(category4, Long.valueOf("4"), "Gas 76 station", new Money(new BigDecimal("25.0"), "USD")));
             expenseRepository.save(new Expense(category5, Long.valueOf("13860428"), "test", new Money(new BigDecimal("15.00"), "USD")));
             expenseRepository.save(new Expense(category6, Long.valueOf("15117729"), "test", new Money(new BigDecimal("399.00"), "USD")));
+
+            // Load Prices to Redis
+            productRepository.save("13860428", "15.00");
+            productRepository.save("15117729", "399.00");
 
 			log.info("Categories found with findAll():");
 			log.info("-------------------------------");
@@ -76,6 +82,13 @@ public class ExpendituresApplication {
             log.info("Expense found with findOne(\"13860428\"):");
             log.info("--------------------------------");
             // log.info(expense3.toString());
+            log.info("");
+
+            // fetch an individual price by from Redis
+            String product1 = productRepository.findById("13860428");
+            log.info("Product found with findById(\"13860428\"):");
+            log.info("--------------------------------");
+            log.info(product1);
             log.info("");
 
             log.info("Call Target API");
