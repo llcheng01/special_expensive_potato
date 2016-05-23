@@ -8,11 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 
-import junit.framework.Assert;
+
 import net.hereisjohnny.dao.CategoryRepository;
 import net.hereisjohnny.dao.ExpenseRepository;
 import net.hereisjohnny.webservice.model.Category;
 import net.hereisjohnny.webservice.model.Expense;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,6 +67,7 @@ public class ExpenseControllerTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
 
+    @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
 
         this.mappingJackson2HttpMessageConverter = Arrays.asList(converters).stream().filter(
@@ -78,8 +80,8 @@ public class ExpenseControllerTest {
     public void setUp() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
 
-        this.categoryRepository.deleteAllInBatch();
         this.expenseRepository.deleteAllInBatch();
+        this.categoryRepository.deleteAllInBatch();
 
         this.category = categoryRepository.save(new Category("test"));
         this.expenseList.add(expenseRepository.save(new Expense(category, "test1", 10.00, false, LocalDate.now())));
@@ -89,14 +91,15 @@ public class ExpenseControllerTest {
 
     @Test
     public void readSingleExpense() throws Exception {
-        mockMvc.perform(get("/expenses/" + this.expenseList.get(0).getId()))
+        Long id = this.expenseList.get(0).getId();
+
+        mockMvc.perform(get("/test/expenses/" + this.expenseList.get(0).getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(contentType))
-                .andExpect(jsonPath("$.id", is(this.expenseList.get(0).getId())))
+                .andExpect(jsonPath("$.id", is(id.intValue())))
                 .andExpect(jsonPath("$.amount", is(10.00)))
                 .andExpect(jsonPath("$.title", is("test1")));
     }
-
 
     protected String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();

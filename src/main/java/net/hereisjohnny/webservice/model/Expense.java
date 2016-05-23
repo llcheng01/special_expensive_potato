@@ -16,7 +16,6 @@ import java.time.LocalDate;
 @Entity
 public class Expense implements Serializable{
 
-    @JsonIgnore
     @ManyToOne
     private Category category;
 

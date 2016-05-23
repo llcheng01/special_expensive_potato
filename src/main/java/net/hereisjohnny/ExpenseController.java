@@ -42,7 +42,6 @@ public class ExpenseController {
     @RequestMapping(value = "/{expenseId}", method = RequestMethod.GET)
     Expense readExpense(@PathVariable String categoryName, @PathVariable Long expenseId) {
         Expense expense = expenseRepository.findOne(expenseId);
-
         return expense;
     }
 
