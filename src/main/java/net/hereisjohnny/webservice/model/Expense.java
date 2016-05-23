@@ -1,13 +1,8 @@
 package net.hereisjohnny.webservice.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.util.Currency;
 
 /**
  * Created by gomez on 5/17/16.
@@ -22,17 +17,14 @@ public class Expense implements Serializable{
     @Id
     @GeneratedValue
     private long id;
-    private String title;
-    private double amount;
-    private boolean pay_with_visa;
-    private LocalDate posted_at;
+    private String name;
+    @Column(length = 100000)
+    private Money current_price;
 
-    public Expense(Category category, String title, double amount, boolean pay_with_visa, LocalDate posted_at) {
-        this.title = title;
+    public Expense(Category category, String name, Money amount) {
         this.category = category;
-        this.amount = amount;
-        this.pay_with_visa = pay_with_visa;
-        this.posted_at = posted_at;
+        this.name = name;
+        this.current_price = amount;
     }
 
     public Category getCategory() {
@@ -43,20 +35,12 @@ public class Expense implements Serializable{
         return id;
     }
 
-    public String getTitle() {
-        return title;
+    public Money getCurrent_price() {
+        return current_price;
     }
 
-    public double getAmount() {
-        return amount;
-    }
-
-    public boolean isPay_with_visa() {
-        return pay_with_visa;
-    }
-
-    public LocalDate getPosted_at() {
-        return posted_at;
+    public String getName() {
+        return name;
     }
 
     // jpa only
@@ -72,25 +56,18 @@ public class Expense implements Serializable{
         Expense expense = (Expense) o;
 
         if (id != expense.id) return false;
-        if (Double.compare(expense.amount, amount) != 0) return false;
-        if (pay_with_visa != expense.pay_with_visa) return false;
-        if (!category.equals(expense.category)) return false;
-        if (!title.equals(expense.title)) return false;
-        return posted_at.equals(expense.posted_at);
+        if (category != null ? !category.equals(expense.category) : expense.category != null) return false;
+        if (!name.equals(expense.name)) return false;
+        return current_price.equals(expense.current_price);
 
     }
 
     @Override
     public int hashCode() {
-        int result;
-        long temp;
-        result = category.hashCode();
+        int result = category != null ? category.hashCode() : 0;
         result = 31 * result + (int) (id ^ (id >>> 32));
-        result = 31 * result + title.hashCode();
-        temp = Double.doubleToLongBits(amount);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + (pay_with_visa ? 1 : 0);
-        result = 31 * result + posted_at.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + current_price.hashCode();
         return result;
     }
 }

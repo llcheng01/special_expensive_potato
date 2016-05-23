@@ -4,6 +4,7 @@ import net.hereisjohnny.dao.CategoryRepository;
 import net.hereisjohnny.dao.ExpenseRepository;
 import net.hereisjohnny.webservice.model.Category;
 import net.hereisjohnny.webservice.model.Expense;
+import net.hereisjohnny.webservice.model.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -11,6 +12,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -29,10 +31,10 @@ public class ExpendituresApplication {
 			Category category4 = categoryRepository.save(new Category("gas"));
 
 			// Breakfast
-			expenseRepository.save(new Expense(category1, "Dennys cafe", 10.00, false, LocalDate.now()));
-			expenseRepository.save(new Expense(category2, "home", 5.00, false, LocalDate.now()));
-			expenseRepository.save(new Expense(category3, "Lee Sandwiches", 15.00, false, LocalDate.now()));
-			expenseRepository.save(new Expense(category4, "Gas 76 station", 25.00, false, LocalDate.now()));
+			expenseRepository.save(new Expense(category1, "Dennys cafe", new Money(new BigDecimal("10.0"), "USD")));
+			expenseRepository.save(new Expense(category2, "home", new Money(new BigDecimal("5.0"), "USD")));
+			expenseRepository.save(new Expense(category3, "Lee Sandwiches", new Money(new BigDecimal("15.0"), "USD")));
+			expenseRepository.save(new Expense(category4, "Gas 76 station", new Money(new BigDecimal("25.0"), "USD")));
 
 			log.info("Categories found with findAll():");
 			log.info("-------------------------------");

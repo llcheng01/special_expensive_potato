@@ -13,6 +13,7 @@ import net.hereisjohnny.dao.CategoryRepository;
 import net.hereisjohnny.dao.ExpenseRepository;
 import net.hereisjohnny.webservice.model.Category;
 import net.hereisjohnny.webservice.model.Expense;
+import net.hereisjohnny.webservice.model.Money;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +30,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by gomez on 5/17/16.
@@ -78,15 +78,25 @@ public class ExpenseControllerTest {
 
     @Before
     public void setUp() throws Exception {
+        Locale locale = Locale.US;
+        Currency currency = Currency.getInstance(locale);
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
 
         this.expenseRepository.deleteAllInBatch();
         this.categoryRepository.deleteAllInBatch();
+        BigDecimal ten_dollers = new BigDecimal("10.0");
+        BigDecimal five_dollers = new BigDecimal("5.0");
 
         this.category = categoryRepository.save(new Category("test"));
-        this.expenseList.add(expenseRepository.save(new Expense(category, "test1", 10.00, false, LocalDate.now())));
-        this.expenseList.add(expenseRepository.save(new Expense(category, "test2", 5.50, false, LocalDate.now())));
+        this.expenseList.add(expenseRepository.save(new Expense(category, "test1", new Money(ten_dollers, "USD"))));
+        this.expenseList.add(expenseRepository.save(new Expense(category, "test2", new Money(five_dollers, "USD"))));
 
+    }
+
+    @Test
+    public void categoryNotFound() throws Exception {
+        mockMvc.perform(get("/unknown/expenses"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -97,8 +107,9 @@ public class ExpenseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(contentType))
                 .andExpect(jsonPath("$.id", is(id.intValue())))
-                .andExpect(jsonPath("$.amount", is(10.00)))
-                .andExpect(jsonPath("$.title", is("test1")));
+                .andExpect(jsonPath("$.current_price.value", is(10.0)))
+                .andExpect(jsonPath("$.current_price.currency_code", is("USD")))
+                .andExpect(jsonPath("$.name", is("test1")));
     }
 
     protected String json(Object o) throws IOException {

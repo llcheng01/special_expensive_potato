@@ -52,6 +52,7 @@ public class Category implements Serializable{
         this.expenses = expenses;
     }
 
+    @JsonIgnore
     public Long getId() {
         return id;
     }
